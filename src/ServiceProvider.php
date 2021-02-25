@@ -2,21 +2,12 @@
 
 namespace Phpsa\StatamicXero;
 
-use Statamic\Statamic;
-use Statamic\Facades\CP\Nav;
 use Statamic\Facades\Utility;
-use Statamic\Providers\AddonServiceProvider;
-use Statamic\CP\Navigation\Nav as NavigationNav;
-use DoubleThreeDigital\SimpleCommerce\Events\CartSaved;
-use DoubleThreeDigital\SimpleCommerce\Events\CartUpdated;
-use DoubleThreeDigital\SimpleCommerce\Events\PreCheckout;
-use DoubleThreeDigital\SimpleCommerce\Events\PostCheckout;
-use DoubleThreeDigital\SimpleCommerce\Events\CartCompleted;
-use DoubleThreeDigital\SimpleCommerce\Events\CouponRedeemed;
-use DoubleThreeDigital\SimpleCommerce\Events\StockRunningLow;
-use DoubleThreeDigital\SimpleCommerce\Events\CustomerAddedToCart;
 use Illuminate\Routing\Router;
+use Statamic\Providers\AddonServiceProvider;
 use Phpsa\StatamicXero\Http\Controllers\Cp\XeroController;
+use DoubleThreeDigital\SimpleCommerce\Events\CartCompleted;
+use Phpsa\StatamicXero\Listeners\CartCompleteListener;
 
 class ServiceProvider extends AddonServiceProvider
 {
@@ -28,20 +19,19 @@ class ServiceProvider extends AddonServiceProvider
         'Acme\Example\Listeners\SendShipmentNotification',
     ], */
 
-        CartCompleted::class       => [],
-        CartSaved::class           => [],
-        CartUpdated::class         => [],
-        CouponRedeemed::class      => [],
-        CustomerAddedToCart::class => [],
-        PostCheckout::class        => [],
-        PreCheckout::class         => [],
-        StockRunningLow::class     => [],
-        StockRunningLow::class     => [],
+        CartCompleted::class => [
+            CartCompleteListener::class
+        ],
+       // CartSaved::class           => [],
+       // CartUpdated::class         => [],
+       // CouponRedeemed::class      => [],
+       // CustomerAddedToCart::class => [],
+        //PostCheckout::class => [],
+        //PreCheckout::class         => [],
+        //StockRunningLow::class     => [],
+        //StockRunningLow::class     => [],
     ];
 
-    protected $subscribe = [
- //   'Acme\Example\Listeners\UserEventSubscriber',
-    ];
 
     protected $publishables = [
         __DIR__ . '/../resources/svg'   => 'svg',
@@ -49,15 +39,12 @@ class ServiceProvider extends AddonServiceProvider
 
     protected $routes = [
         'web' => __DIR__ . '/../routes/web.php',
+      //  'cp' => __DIR__ . '/../routes/web.php',
     ];
 
     public function boot()
     {
         parent::boot();
-
-        Statamic::afterInstalled(function ($command) {
-            //do i do anythink here?
-        });
 
         Utility::make('xero-authentication')
               ->view('statamic-xero::xero-authentication')
@@ -67,7 +54,7 @@ class ServiceProvider extends AddonServiceProvider
             ->docsUrl('https://statamic-addons.cgs4k.nz')
             ->routes(function (Router $router) {
                 // $router->get('/manage/xero', [ XeroController::class, 'manage'])->prefix('statatata')->name('xero.auth.success');
-            //    $router->post('/', [ XeroController::class, 'update'])->name('update');
+                $router->post('/', [ XeroController::class, 'update'])->name('update');
             })
              ->action([XeroController::class, 'index'])
             ->register();

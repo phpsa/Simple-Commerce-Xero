@@ -16,6 +16,10 @@ $ composer require Phpsa/StatamicXero
 
 [Read](./DOCUMENTATION.md) this addon's documentation. -- Website Docs
 
+XERO_CLIENT_ID=
+XERO_CLIENT_SECRET=
+XERO_WEBHOOK_KEY=
+
 ## Statamic Resources
 
 -   [Statamic 3 Docs](https://statamic.dev)
