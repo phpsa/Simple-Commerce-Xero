@@ -62,8 +62,11 @@ class XeroController extends CpController
         $scopes = Config::get('xero.oauth.scopes');
         if (! in_array('accounting.contacts', $scopes)) {
             $scopes[] = 'accounting.contacts';
-            Config::set('xero.oauth.scopes', $scopes);
         }
+        if (! in_array('accounting.transactions', $scopes)) {
+            $scopes[] = 'accounting.transactions';
+        }
+        Config::set('xero.oauth.scopes', $scopes);
 
         return $redirect->to($oauth->getAuthorizationUrl());
     }
@@ -91,6 +94,7 @@ class XeroController extends CpController
     {
 
         $accounts = app(XeroHelper::class)->getAccounts()->toArray();
+        $taxCodes = app(XeroHelper::class)->getTaxCodes()->toArray();
 
         return Blueprint::makeFromFields([
             'sales_revenue'       => [
@@ -147,6 +151,24 @@ class XeroController extends CpController
                 'width'        => 50,
                 'placeholder'  => 'Please select an account',
                 'options'      => $accounts
+            ],
+            'tax_code'            => [
+                'type'         => 'select',
+                'instructions' => 'Map taxable items to this tax code / leave empty for default',
+                'validate'     => 'nullable',
+                'clearable'    => true,
+                'width'        => 50,
+                'placeholder'  => 'Please select an tax rate',
+                'options'      => $taxCodes
+            ],
+            'tax_free_code'       => [
+                'type'         => 'select',
+                'instructions' => 'Map non-taxable items to this tax code / leave empty for default',
+                'validate'     => 'nullable',
+                'clearable'    => true,
+                'width'        => 50,
+                'placeholder'  =>  'Please select an tax rate',
+                'options'      => $taxCodes
             ],
         ]);
     }

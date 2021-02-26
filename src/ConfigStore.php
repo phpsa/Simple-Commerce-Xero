@@ -49,6 +49,15 @@ class ConfigStore
         return $this->data('additional_fees');
     }
 
+    public function getSalesTaxCode(): ?string
+    {
+        return $this->data('tax_code');
+    }
+
+    public function getTaxFreeCode(): ?string
+    {
+        return $this->data('tax_free_code');
+    }
 
     public function getData(): array
     {

@@ -66,15 +66,44 @@ class XeroHelper
         }
     }
 
-    public function getXeroApi()
+    public function getTaxCodes()
+    {
+        $taxes =   Cache::get('statamic_xero_api_taxrates');
+        try {
+            $taxes = collect($this->getXeroApi()->getTaxRates(
+                $this->getTenantId(),
+                'Status=="ACTIVE"'
+            )->getTaxRates())->mapWithKeys(function ($tax) {
+
+                        return [
+                            $tax['tax_type'] => "{$tax['tax_type']} - {$tax['name']} - {$tax['display_tax_rate']}"
+                        ];
+            });
+            if ($taxes->count()) {
+                Cache::add('statamic_xero_api_taxrates', $taxes);
+            }
+        } catch (Throwable $e) {
+            return collect([]);
+        }
+
+        return $taxes;
+    }
+
+    public function createInvoices($invoice)
+    {
+        return $this->getXeroApi()->createInvoices($this->getTenantId(), $invoice);
+    }
+
+    public function getXeroApi(): AccountingApi
     {
         return resolve(AccountingApi::class);
     }
 
-    public function flushAllCaches()
+    public function flushAllCaches(): void
     {
         collect([
-            'statamic_xero_api_accounts'
+            'statamic_xero_api_accounts',
+            'statamic_xero_api_taxrates'
         ])->each(function ($item) {
             Cache::forget($item);
         });
@@ -92,12 +121,18 @@ class XeroHelper
     }
 
 
-    public function splitNames($name)
+    public function splitNames($name): array
     {
         $name = trim($name);
         $last_name = (strpos($name, ' ') === false) ? '' : preg_replace('#.*\s([\w-]*)$#', '$1', $name);
         $first_name = trim(preg_replace('#' . preg_quote($last_name, '#') . '#', '', $name));
         return [$first_name, $last_name];
+    }
+
+
+    public function withDecimals($number, $places = 2)
+    {
+        return number_format((float)$number, $places, '.', '');
     }
 }
 
